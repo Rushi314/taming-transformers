@@ -1,4 +1,17 @@
 # Taming Transformers for High-Resolution Image Synthesis
+
+## Data
+- Create symlinks to the custom S-FLCKR-10k dataset:
+  - **Images:**
+    ```bash
+    ln -s /work/dagarwal_umass_edu/taming-transformers/data/flickr10k_images ./data/flickr10k_images
+    ```
+  - **Segmentations:**
+    ```bash
+    ln -s /work/dagarwal_umass_edu/taming-transformers/data/flickr10k_segmentations ./data/flickr10k_segmentations
+    ```
+---
+# [Parent Repo]
 ##### CVPR 2021 (Oral)
 ![teaser](assets/mountain.jpeg)
 
