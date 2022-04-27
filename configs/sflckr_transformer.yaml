@@ -71,8 +71,8 @@ data:
     train:
       target: taming.data.sflckr.Examples
       params:
-        prefix: flickr10k
+        prefix: flickr10k256
     validation:
       target: taming.data.sflckr.Examples
       params:
-        prefix: flickr10k
+        prefix: flickr10k256
