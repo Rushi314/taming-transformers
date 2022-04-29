@@ -53,26 +53,27 @@ class CausalLocalSelfAttention(nn.Module):
         self.resid_drop = nn.Dropout(config.resid_pdrop)
         # output projection
         self.proj = nn.Linear(config.n_embd, config.n_embd)
-        # causal mask to ensure that attention is only applied to the left in the input sequence
-        mask = torch.tril(torch.ones(config.block_size,
-                                     config.block_size))
-        if hasattr(config, "n_unmasked"):
-            mask[:config.n_unmasked, :config.n_unmasked] = 1
-        self.register_buffer("mask", mask.view(1, 1, config.block_size, config.block_size))
+        # # causal mask to ensure that attention is only applied to the left in the input sequence
+        # mask = torch.tril(torch.ones(config.block_size,
+        #                              config.block_size))
+        # if hasattr(config, "n_unmasked"):
+        #     mask[:config.n_unmasked, :config.n_unmasked] = 1
+        # self.register_buffer("mask", mask.view(1, 1, config.block_size, config.block_size))
         self.n_head = config.n_head
 
         # Local attention
-        bl_sz = config.block_size
-        patch_sz = math.sqrt(bl_sz / 2)  # Should be 16 for bl_sz=512
-        pred_index = bl_sz / 2 + ((patch_sz / 2) * patch_sz + (patch_sz / 2 + 1) - 1)  # Should be 392 for bl_sz=512,patch_sz=16
+        # bl_sz = config.block_size
+        # patch_sz = math.sqrt(bl_sz / 2)  # Should be 16 for bl_sz=512
+        # pred_index = bl_sz / 2 + ((patch_sz / 2) * patch_sz + (patch_sz / 2 + 1) - 1)  # Should be 392 for bl_sz=512,patch_sz=16
         self.local_attn = LocalAttention(
-            dim=config.n_embd,  # dimension of each head (needed for relative positional encoding)
-            window_size=math.ceil(pred_index/config.n_layer),  # Should be 17 for pred_index=392,n_layer=24
+            # dim=config.n_embd,  # dimension of each head (needed for relative positional encoding)
+            window_size=73,  # math.ceil(pred_index/config.n_layer),  # Should be 17 for pred_index=392,n_layer=24
             causal=True,  # auto-regressive or not
             look_backward=1,  # each window looks at the window before
             look_forward=0,
             dropout=config.attn_pdrop,  # post-attention dropout
-            exact_windowsize=False
+            exact_windowsize=False,
+            autopad=True,
         )
 
     def forward(self, x, layer_past=None):
@@ -90,7 +91,10 @@ class CausalLocalSelfAttention(nn.Module):
             v = torch.cat((past_value, v), dim=-2)
 
         # causal local self attention
-        y = self.local_attn(q, k, v, input_mask=self.mask)
+        y = self.local_attn(q, k, v)
+
+        # re-assemble all head outputs side by side
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
 
         # output projection
         y = self.resid_drop(self.proj(y))
