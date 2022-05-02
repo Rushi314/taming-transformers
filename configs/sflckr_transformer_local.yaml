@@ -72,8 +72,12 @@ data:
     train:
       target: taming.data.sflckr.Examples
       params:
-        prefix: flickr10k256
+        prefix: flickr10k
+        size: 256
+        random_crop: true
     validation:
       target: taming.data.sflckr.Examples
       params:
-        prefix: flickr10k256
+        prefix: flickr10k
+        size: 256
+        random_crop: true

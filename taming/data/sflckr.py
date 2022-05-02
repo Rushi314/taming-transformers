@@ -62,7 +62,6 @@ class SegmentationBase(Dataset):
         image = np.array(image).astype(np.uint8)
         if self.size is not None:
             image = self.image_rescaler(image=image)["image"]
-        example["image"] = (image / 127.5 - 1.0).astype(np.float32)
         if "segmentation_path_" in example:
             segmentation = Image.open(example["segmentation_path_"])
             assert segmentation.mode == "L", segmentation.mode
@@ -81,8 +80,10 @@ class SegmentationBase(Dataset):
                              "mask": segmentation
                              }
             segmentation = processed["mask"]
+            image = processed["image"]
             onehot = np.eye(self.n_labels)[segmentation]
             example["segmentation"] = onehot
+        example["image"] = (image / 127.5 - 1.0).astype(np.float32)
         return example
 
 
